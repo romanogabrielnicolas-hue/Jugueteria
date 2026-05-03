@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jugueteria Magica - Sistema POS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header class="header">
+            <h1>JUGUETERIA MAGICA</h1>
+            <p>Sistema POS Completo</p>
+        </header>
+
+        <!-- LOGIN -->
+        <section id="loginDiv" class="section login-section active">
+            <div class="login-form">
+                <h2>Iniciar Sesion</h2>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" placeholder="admin@jugueteria.com">
+                </div>
+                <div class="form-group">
+                    <label for="password">Contrasena:</label>
+                    <input type="password" id="password" placeholder="********">
+                </div>
+                <button class="btn btn-primary" onclick="login()">Entrar</button>
+            </div>
+        </section>
+
+        <!-- APP PRINCIPAL -->
+        <div id="appDiv" class="app-main" style="display: none;">
+            <!-- NAVEGACION -->
+            <nav class="nav">
+                <button onclick="mostrarSeccion('productos')" class="nav-btn active" data-section="productos">
+                    Productos
+                </button>
+                <button onclick="mostrarSeccion('carrito')" class="nav-btn" data-section="carrito">
+                    Carrito
+                </button>
+                <button onclick="mostrarSeccion('ventas')" class="nav-btn" data-section="ventas">
+                    Ventas
+                </button>
+                <button onclick="mostrarSeccion('estadisticas')" class="nav-btn" data-section="estadisticas">
+                    Estadisticas
+                </button>
+                <button id="solicitudesBtn" onclick="mostrarSeccion('solicitudes')" class="nav-btn" data-section="solicitudes" style="display: none;">
+                    Solicitudes
+                </button>
+                <button id="cajaBtn" onclick="renderCaja(); mostrarSeccion('caja')" class="nav-btn" data-section="caja" style="display: none;">
+                    Caja
+                </button>
+                <button onclick="logout()" class="nav-btn">
+                    Salir
+                </button>
+            </nav>
+
+            <!-- CONTENIDO -->
+            <main class="content">
+                <!-- CARGAR VENTA -->
+                <section id="productos" class="section active">
+                    <div class="section-header">
+                        <h2>Cargar Venta</h2>
+                        <div class="agregar-producto">
+                            <h3>Agregar Producto a la Venta</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Nombre:</label>
+                                    <input type="text" id="nombreProducto" placeholder="Ej: Peluche, juguete, regalo">
+                                </div>
+                                <div class="form-group">
+                                    <label>Precio ($):</label>
+                                    <input type="number" id="precioProducto" step="0.01" placeholder="29.99">
+                                </div>
+                                <div class="form-group">
+                                    <label>Cantidad:</label>
+                                    <input type="number" id="cantidadProducto" value="1" min="1" placeholder="1">
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="agregarVentaManual()">
+                                Agregar a la Venta
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CARRITO -->
+                <section id="carrito" class="section">
+                    <h2>Carrito de Compras</h2>
+
+                    <div id="carritoLista" class="carrito-lista"></div>
+
+                    <div id="totalContainer" class="total-container" style="display: none;">
+                        <div class="total-display">
+                            Total: $<span id="total">0</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary finalizar-venta" onclick="mostrarModalPago()">
+                        FINALIZAR VENTA
+                    </button>
+                </section>
+
+                <!-- VENTAS -->
+                <section id="ventas" class="section">
+                    <h2>Historial de Ventas</h2>
+                    <div class="ventas-toolbar">
+                        <div class="form-group">
+                            <label for="fechaVentas">Fecha:</label>
+                            <input type="date" id="fechaVentas" onchange="cambiarFechaVentas()">
+                        </div>
+                        <div class="form-group">
+                            <label for="buscarVenta">Buscar producto:</label>
+                            <input type="search" id="buscarVenta" placeholder="Ej: peluche" oninput="buscarVentas()">
+                        </div>
+                        <button class="btn btn-secondary" onclick="exportarVentasCSV()">
+                            Exportar CSV
+                        </button>
+                    </div>
+                    <div id="ventasLista" class="ventas-lista"></div>
+                </section>
+
+                <!-- ESTADISTICAS -->
+                <section id="estadisticas" class="section">
+                    <h2>Productos Mas Vendidos</h2>
+                    <div class="estadisticas-toolbar">
+                        <div class="form-group">
+                            <label for="periodoEstadisticas">Periodo:</label>
+                            <select id="periodoEstadisticas" onchange="cambiarPeriodoEstadisticas()">
+                                <option value="dia">Dia seleccionado</option>
+                                <option value="semana">Esta semana</option>
+                                <option value="mes">Este mes</option>
+                                <option value="rango">Rango personalizado</option>
+                                <option value="todo">Todo el historial</option>
+                            </select>
+                        </div>
+                        <div id="rangoEstadisticasCampos" class="rango-estadisticas-campos" style="display: none;">
+                            <div class="form-group">
+                                <label for="fechaEstadisticasDesde">Desde:</label>
+                                <input type="date" id="fechaEstadisticasDesde" onchange="cambiarRangoEstadisticas()">
+                            </div>
+                            <div class="form-group">
+                                <label for="fechaEstadisticasHasta">Hasta:</label>
+                                <input type="date" id="fechaEstadisticasHasta" onchange="cambiarRangoEstadisticas()">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="estadisticasLista" class="estadisticas-lista"></div>
+                </section>
+
+                <!-- SOLICITUDES -->
+                <section id="solicitudes" class="section">
+                    <h2>Solicitudes Pendientes</h2>
+                    <div id="solicitudesLista" class="solicitudes-lista"></div>
+                </section>
+
+                <!-- CAJA -->
+                <section id="caja" class="section">
+                    <h2>Cierre de Caja</h2>
+                    <p class="section-note">Selecciona fecha y horario de turno para calcular el cierre.</p>
+                    <div id="cajaResumen" class="caja-resumen"></div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL FORMA DE PAGO -->
+    <div id="modalPago" class="modal-pago" style="display: none;">
+        <div class="modal-pago-content">
+            <h3>Seleccionar Forma de Pago</h3>
+            <div class="metodos-pago-modal">
+                <button type="button" class="btn metodo-pago-btn" onclick="confirmarFormaPago('efectivo')">
+                    💵 Efectivo
+                </button>
+                <button type="button" class="btn metodo-pago-btn" onclick="confirmarFormaPago('transferencia')">
+                    🏦 Transferencia
+                </button>
+                <button type="button" class="btn metodo-pago-btn" onclick="confirmarFormaPago('tarjeta')">
+                    Tarjeta
+                </button>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="cerrarModalPago()" style="margin-top: 15px;">
+                Cancelar
+            </button>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
+

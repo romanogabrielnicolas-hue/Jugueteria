@@ -1,0 +1,49 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner() {
+      return signedIn() &&
+        request.auth.token.email == "hosteriamicati@gmail.com";
+    }
+
+    match /ventas/{ventaId} {
+      allow read, create: if signedIn();
+      allow update, delete: if isOwner();
+    }
+
+    match /solicitudes/{solicitudId} {
+      allow read: if isOwner();
+      allow create: if signedIn() &&
+        request.resource.data.estado == "pendiente" &&
+        request.resource.data.solicitadoPor == request.auth.token.email;
+      allow update: if isOwner();
+      allow delete: if false;
+    }
+
+    match /usuarios/{usuarioEmail} {
+      allow read: if signedIn();
+      allow write: if isOwner();
+    }
+
+    match /cierresCaja/{cierreId} {
+      allow read: if isOwner() ||
+        (signedIn() && resource.data.cerradoPor == request.auth.token.email);
+      allow create: if signedIn() &&
+        request.resource.data.cerradoPor == request.auth.token.email;
+      allow update: if isOwner() ||
+        (signedIn() &&
+          resource.data.cerradoPor == request.auth.token.email &&
+          request.resource.data.cerradoPor == resource.data.cerradoPor);
+      allow delete: if isOwner();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
