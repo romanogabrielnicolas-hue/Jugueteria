@@ -10,9 +10,21 @@
     <div class="container">
         <!-- HEADER -->
         <header class="header">
+            <button id="themeToggle" class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Cambiar a modo oscuro">
+                Modo oscuro
+            </button>
             <h1>JUGUETERIA MAGICA</h1>
             <p>Sistema POS Completo</p>
         </header>
+
+        <div class="main-tabs" role="tablist" aria-label="Pantallas principales">
+            <button id="loginTab" class="main-tab active" type="button" onclick="mostrarPestanaPrincipal('login')">
+                Inicio sesion
+            </button>
+            <button id="sistemaTab" class="main-tab" type="button" onclick="mostrarPestanaPrincipal('app')" disabled>
+                Sistema
+            </button>
+        </div>
 
         <!-- LOGIN -->
         <section id="loginDiv" class="section login-section active">

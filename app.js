@@ -43,6 +43,9 @@ const fechaVentasInput = document.getElementById("fechaVentas");
 const buscarVentaInput = document.getElementById("buscarVenta");
 const totalSpan = document.getElementById("total");
 const totalContainer = document.getElementById("totalContainer");
+const themeToggle = document.getElementById("themeToggle");
+const loginTab = document.getElementById("loginTab");
+const sistemaTab = document.getElementById("sistemaTab");
 
 let carrito = {};
 let total = 0;
@@ -52,7 +55,49 @@ let ultimoTicket = null;
 let ventasUnsubscribe, estadisticasUnsubscribe, solicitudesUnsubscribe;
 let cantidadVentasVisibles = 10;
 let rolUsuarioActual = "empleado";
+let usuarioAutenticado = false;
 const CANTIDAD_VENTAS_POR_PAGINA = 10;
+const THEME_STORAGE_KEY = "jtodo-theme";
+
+function aplicarTema(tema) {
+    const esOscuro = tema === "dark";
+    document.body.classList.toggle("dark-mode", esOscuro);
+
+    if (themeToggle) {
+        themeToggle.textContent = esOscuro ? "Modo claro" : "Modo oscuro";
+        themeToggle.setAttribute("aria-label", esOscuro ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+    }
+}
+
+window.toggleTheme = function () {
+    const temaActual = document.body.classList.contains("dark-mode") ? "dark" : "light";
+    const nuevoTema = temaActual === "dark" ? "light" : "dark";
+    localStorage.setItem(THEME_STORAGE_KEY, nuevoTema);
+    aplicarTema(nuevoTema);
+};
+
+aplicarTema(localStorage.getItem(THEME_STORAGE_KEY) || "light");
+
+function actualizarPestanasPrincipales(pestanaActiva) {
+    if (loginTab) loginTab.classList.toggle("active", pestanaActiva === "login");
+    if (sistemaTab) {
+        sistemaTab.classList.toggle("active", pestanaActiva === "app");
+        sistemaTab.disabled = !usuarioAutenticado;
+    }
+}
+
+window.mostrarPestanaPrincipal = function (pestana) {
+    if (pestana === "app" && !usuarioAutenticado) {
+        alert("Primero inicia sesion para entrar al sistema");
+        actualizarPestanasPrincipales("login");
+        return;
+    }
+
+    const mostrarApp = pestana === "app";
+    loginDiv.classList.toggle("active", !mostrarApp);
+    appDiv.style.display = mostrarApp ? "block" : "none";
+    actualizarPestanasPrincipales(mostrarApp ? "app" : "login");
+};
 
 function normalizarImporte(valor) {
     return Math.round((Number(valor) || 0) * 100) / 100;
@@ -131,9 +176,9 @@ function rangoEstadisticas() {
 // AUTENTICACION AUTOMATICA
 onAuthStateChanged(auth, async (user) => {
     if (user) {
+        usuarioAutenticado = true;
         rolUsuarioActual = await obtenerRolUsuario(user.email);
-        loginDiv.classList.remove("active");
-        appDiv.style.display = "block";
+        mostrarPestanaPrincipal("app");
         if (fechaVentasInput && !fechaVentasInput.value) {
             fechaVentasInput.value = fechaLocalISO();
         }
@@ -143,8 +188,8 @@ onAuthStateChanged(auth, async (user) => {
         cargarEstadisticas();
         cargarSolicitudes();
     } else {
-        loginDiv.classList.add("active");
-        appDiv.style.display = "none";
+        usuarioAutenticado = false;
+        mostrarPestanaPrincipal("login");
         rolUsuarioActual = "empleado";
         if (ventasUnsubscribe) ventasUnsubscribe();
         if (estadisticasUnsubscribe) estadisticasUnsubscribe();
